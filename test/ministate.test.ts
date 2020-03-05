@@ -82,6 +82,14 @@ describe('ministate', () => {
       });
     });
 
+    it('does not change state with unknown event', () => {
+      const { send, getState } = createMachine(config);
+      send('UNKNOWN');
+      expect(getState()).toEqual({
+        searchBox: 'initial',
+      });
+    });
+
     it('changes state of multiple machines', () => {
       const { send, getState } = createMachine(configWithMultipleMachines);
       send('INPUT');
