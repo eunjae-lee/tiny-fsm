@@ -620,4 +620,50 @@ describe('ministate', () => {
       });
     });
   });
+
+  describe('setActions', () => {
+    const config: CreateMachineConfig = {
+      context: {
+        query: null,
+      },
+      machine: {
+        id: 'searchBox',
+        initial: 'initial',
+        states: {
+          initial: {
+            on: { INPUT: 'searching' },
+          },
+          searching: {
+            entry: ['search', 'anotherAction'],
+            on: {
+              FETCHED: 'success',
+              INPUT: 'searching',
+              RESET_SEARCH: 'initial',
+            },
+          },
+          success: {
+            on: { INPUT: 'searching', RESET_SEARCH: 'initial' },
+          },
+        },
+      },
+      actions: {
+        search: ({ setContext, data }) => {
+          setContext({
+            query: data.query,
+          });
+        },
+      },
+    };
+
+    it('can setActions later', () => {
+      const { setActions, send } = createMachine(config);
+      const anotherAction = jest.fn();
+      setActions({
+        anotherAction,
+      });
+
+      send({ type: 'INPUT', data: { query: 'hello' } });
+      expect(anotherAction).toHaveBeenCalledTimes(1);
+    });
+  });
 });

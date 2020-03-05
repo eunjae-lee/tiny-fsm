@@ -52,7 +52,7 @@ type Action = (actionParams: ActionParams) => any;
 type Machine = {
   id: string;
   initial: StateName;
-  states: { [key in StateName]: State };
+  states: Record<StateName, State>;
 };
 
 type ContextChangeListener = (newContext: any, prevContext: any) => any;
@@ -61,8 +61,8 @@ type StateChangeListener = (newState: any, prevState: any) => any;
 export type CreateMachineConfig = {
   context?: Context;
   machine: Machine | Machine[];
-  actions?: { [key in ActionName]: Action };
-  guards?: { [key in GuardName]: Guard };
+  actions?: Record<ActionName, Action>;
+  guards?: Record<GuardName, Guard>;
 };
 
 function getMachines(config: CreateMachineConfig) {
@@ -183,6 +183,7 @@ type MachineReturn = {
   send: Send;
   getState: () => any;
   getContext: () => any;
+  setActions: (actions: Record<ActionName, Action>) => void;
   listen: {
     onContextChange: (listener: ContextChangeListener) => void;
     onStateChange: (listener: StateChangeListener) => void;
@@ -225,6 +226,9 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
     },
     getContext: () => {
       return contextRef.current;
+    },
+    setActions: (actions: Record<ActionName, Action>): void => {
+      config.actions = Object.assign({}, config.actions, actions);
     },
     listen: {
       onContextChange: listener => {
