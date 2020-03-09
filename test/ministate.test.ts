@@ -141,6 +141,51 @@ describe('tiny-fsm', () => {
         createMachine(config);
         expect(reset).toHaveBeenCalledTimes(1);
       });
+
+      it('runs after setting state', done => {
+        const config: CreateMachineConfig = {
+          context: {
+            query: null,
+          },
+          machine: {
+            id: 'searchBox',
+            initial: 'initial',
+            states: {
+              initial: {
+                on: { INPUT: 'searching' },
+              },
+              searching: {
+                entry: ['setQuery'],
+                on: {
+                  FETCHED: 'success',
+                  INPUT: 'searching',
+                  RESET_SEARCH: 'initial',
+                },
+              },
+              success: {
+                on: { INPUT: 'searching', RESET_SEARCH: 'initial' },
+              },
+            },
+          },
+          actions: {
+            setQuery: ({ setContext, data }) => {
+              setContext({
+                query: data.query,
+              });
+            },
+          },
+        };
+        const { listen, send } = createMachine(config);
+        let contextChanged = false;
+        listen.onContextChange(() => {
+          contextChanged = true;
+        });
+        listen.onStateChange(() => {
+          expect(contextChanged).toBe(false);
+          done();
+        });
+        send({ type: 'INPUT', data: {query: 'hello'} });
+      });
     });
 
     describe('setContext', () => {

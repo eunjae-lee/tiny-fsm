@@ -34,6 +34,7 @@ type ActionName = string;
 type SetContext = (context: any) => void;
 type Send = (event: Event) => void;
 type ContextRef = { current: Context };
+type StateRef = { current: any };
 type InternalActionParams = {
   send: Send;
   type: EventName;
@@ -87,9 +88,10 @@ function getEventData(event: Event) {
 function moveToNextState(
   config: CreateMachineConfig,
   contextRef: ContextRef,
-  prevState: any,
+  stateRef: StateRef,
   event: Event,
   send: Send,
+  stateChangeListener: StateChangeListener | null,
   contextChangeListener: ContextChangeListener | null
 ) {
   const rawEventName = getEventName(event);
@@ -106,12 +108,12 @@ function moveToNextState(
     contextRef,
   };
 
-  return getMachines(config).reduce((nextState: any, machine: Machine) => {
+  return getMachines(config).forEach((machine: Machine) => {
     if (isEventScoped && machine.id !== eventScope) {
-      return nextState;
+      return;
     }
 
-    const currentState = machine.states[prevState[machine.id]];
+    const currentState = machine.states[stateRef.current[machine.id]];
     if (currentState.on && currentState.on[eventName] !== undefined) {
       const dest = currentState.on[eventName];
       const nextStateName = typeof dest === 'string' ? dest : dest.target;
@@ -123,7 +125,7 @@ function moveToNextState(
         !guard ||
         guard({
           context: contextRef.current,
-          state: prevState,
+          state: stateRef.current,
           type: eventName,
           data: eventData,
         })
@@ -131,22 +133,27 @@ function moveToNextState(
         runActions(
           'exit',
           config,
-          nextState,
+          stateRef.current,
           contextChangeListener,
           internalActionParams
         );
-        nextState[machine.id] = nextStateName;
+        const prevState = {
+          ...stateRef.current  
+        }
+        stateRef.current[machine.id] = nextStateName;
+        if (stateChangeListener) {
+          stateChangeListener(stateRef.current, prevState)
+        }
         runActions(
           'entry',
           config,
-          nextState,
+          stateRef.current,
           contextChangeListener,
           internalActionParams
         );
       }
     }
-    return nextState;
-  }, prevState);
+  });
 }
 
 function runActions(
@@ -196,23 +203,22 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
   const contextRef: ContextRef = {
     current: config.context,
   };
-  let state = getInitialState(config);
+  let stateRef: StateRef = {
+    current: getInitialState(config)
+  };
   const send: Send = (event: Event) => {
-    const prevState = state;
-    state = moveToNextState(
+    moveToNextState(
       config,
       contextRef,
-      state,
+      stateRef,
       event,
       send,
+      stateChangeListener,
       contextChangeListener
     );
-    if (stateChangeListener) {
-      stateChangeListener(state, prevState);
-    }
   };
 
-  runActions('entry', config, state, contextChangeListener, {
+  runActions('entry', config, stateRef.current, contextChangeListener, {
     send,
     type: INITIAL_DUMMY_TYPE,
     data: undefined,
@@ -222,7 +228,7 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
   return {
     send,
     getState: () => {
-      return state;
+      return stateRef.current;
     },
     getContext: () => {
       return contextRef.current;
