@@ -185,8 +185,8 @@ type MachineReturn = {
   getContext: () => any;
   setActions: (actions: Record<ActionName, Action>) => void;
   listen: {
-    onContextChange: (listener: ContextChangeListener) => void;
-    onStateChange: (listener: StateChangeListener) => void;
+    onContextChange: (listener: ContextChangeListener | null) => void;
+    onStateChange: (listener: StateChangeListener | null) => void;
   };
 };
 
