@@ -113,7 +113,8 @@ function moveToNextState(
       return;
     }
 
-    const currentState = machine.states[stateRef.current[machine.id]];
+    const currentStateName = stateRef.current[machine.id];
+    const currentState = machine.states[currentStateName];
     if (currentState.on && currentState.on[eventName] !== undefined) {
       const dest = currentState.on[eventName];
       const nextStateName = typeof dest === 'string' ? dest : dest.target;
@@ -132,6 +133,7 @@ function moveToNextState(
       ) {
         runActions(
           'exit',
+          [machine],
           config,
           stateRef.current,
           contextChangeListener,
@@ -146,6 +148,7 @@ function moveToNextState(
         }
         runActions(
           'entry',
+          [machine],
           config,
           stateRef.current,
           contextChangeListener,
@@ -158,6 +161,7 @@ function moveToNextState(
 
 function runActions(
   when: 'entry' | 'exit',
+  machines: Machine[],
   config: CreateMachineConfig,
   state: any,
   contextChangeListener: ContextChangeListener | null,
@@ -170,7 +174,7 @@ function runActions(
       contextChangeListener(contextRef.current, prevContext);
     }
   };
-  getMachines(config).forEach(machine => {
+  machines.forEach(machine => {
     const actions = machine.states[state[machine.id]][when];
     if (Array.isArray(actions)) {
       actions.forEach(actionName => {
@@ -218,12 +222,19 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
     );
   };
 
-  runActions('entry', config, stateRef.current, contextChangeListener, {
-    send,
-    type: INITIAL_DUMMY_TYPE,
-    data: undefined,
-    contextRef,
-  });
+  runActions(
+    'entry',
+    getMachines(config),
+    config,
+    stateRef.current,
+    contextChangeListener,
+    {
+      send,
+      type: INITIAL_DUMMY_TYPE,
+      data: undefined,
+      contextRef,
+    }
+  );
 
   return {
     send,

@@ -186,6 +186,52 @@ describe('tiny-fsm', () => {
         });
         send({ type: 'INPUT', data: { query: 'hello' } });
       });
+
+      it('does not trigger actions of other irrelevant state', () => {
+        const setQuery = jest.fn();
+        const config: CreateMachineConfig = {
+          context: {
+            query: null,
+          },
+          machine: [
+            {
+              id: 'searchBox',
+              initial: 'initial',
+              states: {
+                initial: {
+                  on: { INPUT: 'searching' },
+                },
+                searching: {
+                  entry: ['setQuery'],
+                  on: {
+                    INPUT: 'searching',
+                  },
+                },
+              },
+            },
+            {
+              id: 'dropdown',
+              initial: 'closed',
+              states: {
+                closed: {
+                  on: { OPEN: 'opened' },
+                },
+                opened: {
+                  on: { CLOSE: 'closed' },
+                },
+              },
+            },
+          ],
+          actions: {
+            setQuery,
+          },
+        };
+        const { send } = createMachine(config);
+        send('INPUT');
+        expect(setQuery).toHaveBeenCalledTimes(1);
+        send('OPEN');
+        expect(setQuery).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe('setContext', () => {
