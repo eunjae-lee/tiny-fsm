@@ -184,7 +184,7 @@ describe('tiny-fsm', () => {
           expect(contextChanged).toBe(false);
           done();
         });
-        send({ type: 'INPUT', data: {query: 'hello'} });
+        send({ type: 'INPUT', data: { query: 'hello' } });
       });
     });
 

@@ -138,11 +138,11 @@ function moveToNextState(
           internalActionParams
         );
         const prevState = {
-          ...stateRef.current  
-        }
+          ...stateRef.current,
+        };
         stateRef.current[machine.id] = nextStateName;
         if (stateChangeListener) {
-          stateChangeListener(stateRef.current, prevState)
+          stateChangeListener(stateRef.current, prevState);
         }
         runActions(
           'entry',
@@ -204,7 +204,7 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
     current: config.context,
   };
   let stateRef: StateRef = {
-    current: getInitialState(config)
+    current: getInitialState(config),
   };
   const send: Send = (event: Event) => {
     moveToNextState(
