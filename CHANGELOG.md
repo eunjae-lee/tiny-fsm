@@ -1,3 +1,12 @@
+## [0.0.4](https://github.com/eunjae-lee/tiny-fsm/compare/v0.0.3...v0.0.4) (2020-03-17)
+
+
+### Bug Fixes
+
+* use undefined instead of null for data when not given ([e4aaaaa](https://github.com/eunjae-lee/tiny-fsm/commit/e4aaaaad0558caa67aeae52a0ffe73ccd80aff4b))
+
+
+
 ## [0.0.3](https://github.com/eunjae-lee/tiny-fsm/compare/v0.0.2...v0.0.3) (2020-03-10)
 
 
