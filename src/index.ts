@@ -82,7 +82,7 @@ function getEventName(event: Event) {
 }
 
 function getEventData(event: Event) {
-  return typeof event === 'string' ? null : event.data;
+  return typeof event === 'string' ? undefined : event.data;
 }
 
 function moveToNextState(
