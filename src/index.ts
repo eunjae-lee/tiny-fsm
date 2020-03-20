@@ -1,6 +1,5 @@
 const INITIAL_DUMMY_TYPE = 'tiny-fsm.init';
 
-type Context = any;
 type StateName = string;
 type EventName = string;
 type EventWithData = {
@@ -13,15 +12,15 @@ type StateNameWithGuard = {
   target: StateName;
   cond: GuardName;
 };
-type GuardParams = {
-  context: any;
-  state: any;
+type GuardParams<TContext> = {
+  context: TContext;
+  state: unknown;
   type: EventName;
   data: ActionData;
 };
-type Guard = (params: GuardParams) => boolean;
+type Guard<TContext> = (params: GuardParams<TContext>) => boolean;
 
-type State = {
+type StateDefinition = {
   entry?: ActionName[];
   exit?: ActionName[];
   on?: {
@@ -31,47 +30,53 @@ type State = {
 
 type ActionData = any;
 type ActionName = string;
-type SetContext = (context: any) => void;
+type SetContext<TContext> = (context: Partial<TContext> | undefined) => void;
 type Send = (event: Event) => void;
-type ContextRef = { current: Context };
-type StateRef = { current: any };
-type InternalActionParams = {
+type ContextRef<TContext> = { current: TContext };
+type State = Record<string, StateName>;
+type StateRef = { current: State };
+type InternalActionParams<TContext> = {
   send: Send;
   type: EventName;
   data: ActionData;
-  contextRef: ContextRef;
+  contextRef: ContextRef<TContext>;
 };
-type ActionParams = {
-  setContext: SetContext;
+type ActionParams<TContext> = {
+  setContext: SetContext<TContext>;
   send: Send;
   type: EventName;
   data: ActionData;
-  context: Context;
+  context: TContext;
 };
-type Action = (actionParams: ActionParams) => any;
+type Action<TContext> = (actionParams: ActionParams<TContext>) => void;
 
 type Machine = {
   id: string;
   initial: StateName;
-  states: Record<StateName, State>;
+  states: Record<StateName, StateDefinition>;
 };
 
-type ContextChangeListener = (newContext: any, prevContext: any) => any;
-type StateChangeListener = (newState: any, prevState: any) => any;
+type ContextChangeListener<TContext> = (
+  newContext: TContext,
+  prevContext: TContext
+) => void;
+type StateChangeListener = (newState: unknown, prevState: unknown) => void;
 
-export type CreateMachineConfig = {
-  context?: Context;
+export type CreateMachineConfig<TContext = any> = {
+  context?: TContext;
   machine: Machine | Machine[];
-  actions?: Record<ActionName, Action>;
-  guards?: Record<GuardName, Guard>;
+  actions?: Record<ActionName, Action<TContext>>;
+  guards?: Record<GuardName, Guard<TContext>>;
 };
 
-function getMachines(config: CreateMachineConfig) {
+function getMachines<TContext>(config: CreateMachineConfig<TContext>) {
   return Array.isArray(config.machine) ? config.machine : [config.machine];
 }
 
-function getInitialState(config: CreateMachineConfig) {
-  return getMachines(config).reduce((state: any, machine: Machine) => {
+function getInitialState<TContext>(
+  config: CreateMachineConfig<TContext>
+): State {
+  return getMachines(config).reduce((state: State, machine: Machine) => {
     state[machine.id] = machine.initial;
     return state;
   }, {});
@@ -85,14 +90,14 @@ function getEventData(event: Event) {
   return typeof event === 'string' ? undefined : event.data;
 }
 
-function moveToNextState(
-  config: CreateMachineConfig,
-  contextRef: ContextRef,
+function moveToNextState<TContext>(
+  config: CreateMachineConfig<TContext>,
+  contextRef: ContextRef<TContext>,
   stateRef: StateRef,
   event: Event,
   send: Send,
   stateChangeListener: StateChangeListener | null,
-  contextChangeListener: ContextChangeListener | null
+  contextChangeListener: ContextChangeListener<TContext> | null
 ) {
   const rawEventName = getEventName(event);
   const eventData = getEventData(event);
@@ -101,7 +106,7 @@ function moveToNextState(
   const eventName = isEventScoped
     ? rawEventName.substr(rawEventName.indexOf('.') + 1)
     : rawEventName;
-  const internalActionParams: InternalActionParams = {
+  const internalActionParams: InternalActionParams<TContext> = {
     send,
     type: eventName,
     data: eventData,
@@ -118,7 +123,7 @@ function moveToNextState(
     if (currentState.on && currentState.on[eventName] !== undefined) {
       const dest = currentState.on[eventName];
       const nextStateName = typeof dest === 'string' ? dest : dest.target;
-      const guard: Guard | null | undefined =
+      const guard: Guard<TContext> | null | undefined =
         typeof dest === 'string'
           ? null
           : config.guards && config.guards[dest.cond];
@@ -159,15 +164,15 @@ function moveToNextState(
   });
 }
 
-function runActions(
+function runActions<TContext>(
   when: 'entry' | 'exit',
   machines: Machine[],
-  config: CreateMachineConfig,
-  state: any,
-  contextChangeListener: ContextChangeListener | null,
-  { send, type, data, contextRef }: InternalActionParams
+  config: CreateMachineConfig<TContext>,
+  state: State,
+  contextChangeListener: ContextChangeListener<TContext> | null,
+  { send, type, data, contextRef }: InternalActionParams<TContext>
 ) {
-  const setContext: SetContext = (newContext: any) => {
+  const setContext: SetContext<TContext> = newContext => {
     const prevContext = contextRef.current;
     contextRef.current = Object.assign({}, contextRef.current, newContext);
     if (contextChangeListener) {
@@ -190,22 +195,24 @@ function runActions(
   });
 }
 
-type MachineReturn = {
+type MachineReturn<TContext> = {
   send: Send;
-  getState: () => any;
-  getContext: () => any;
-  setActions: (actions: Record<ActionName, Action>) => void;
+  getState: () => unknown;
+  getContext: () => TContext;
+  setActions: (actions: Record<ActionName, Action<TContext>>) => void;
   listen: {
-    onContextChange: (listener: ContextChangeListener | null) => void;
+    onContextChange: (listener: ContextChangeListener<TContext> | null) => void;
     onStateChange: (listener: StateChangeListener | null) => void;
   };
 };
 
-export function createMachine(config: CreateMachineConfig): MachineReturn {
-  let contextChangeListener: ContextChangeListener | null = null;
+export function createMachine<TContext>(
+  config: CreateMachineConfig<TContext>
+): MachineReturn<TContext> {
+  let contextChangeListener: ContextChangeListener<TContext> | null = null;
   let stateChangeListener: StateChangeListener | null = null;
-  const contextRef: ContextRef = {
-    current: config.context,
+  const contextRef: ContextRef<TContext> = {
+    current: config.context || ({} as TContext),
   };
   let stateRef: StateRef = {
     current: getInitialState(config),
@@ -244,7 +251,7 @@ export function createMachine(config: CreateMachineConfig): MachineReturn {
     getContext: () => {
       return contextRef.current;
     },
-    setActions: (actions: Record<ActionName, Action>): void => {
+    setActions: (actions: Record<ActionName, Action<TContext>>): void => {
       config.actions = Object.assign({}, config.actions, actions);
     },
     listen: {
