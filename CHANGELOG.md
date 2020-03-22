@@ -1,3 +1,12 @@
+## [0.0.5](https://github.com/eunjae-lee/tiny-fsm/compare/v0.0.4...v0.0.5) (2020-03-20)
+
+
+### Bug Fixes
+
+* type definitions ([e93f155](https://github.com/eunjae-lee/tiny-fsm/commit/e93f1554fa58978d533e47da5e575a2ac5cf3e33))
+
+
+
 ## [0.0.4](https://github.com/eunjae-lee/tiny-fsm/compare/v0.0.3...v0.0.4) (2020-03-17)
 
 
