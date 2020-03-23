@@ -1,0 +1,24 @@
+.autocomplete {
+  display: flex;
+  flex-direction: column;
+}
+
+.searchbox {
+  font-size: 1.5rem;
+  padding: 0.3rem 1rem;
+}
+
+.hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hit {
+  padding: 0.5rem 1rem;
+}
+
+.highlighted {
+  background-color: rebeccapurple;
+  color: white;
+}
