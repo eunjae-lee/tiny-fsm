@@ -8,13 +8,13 @@ This is a small library to implement Finite State Machine. The gzipped bundle si
 
 You'd better just use [@xstate/fsm](https://xstate.js.org/docs/packages/xstate-fsm/).
 
-I wanted to use @xstate/fsm but it doesn't provide parallel states, so I made this.
+I wanted to use it, but it doesn't provide parallel states, so I made this.
 
-However this is not a serious project, but more of a outcome of my learning.
+This is not a serious project, but more of a outcome of my learning.
 
 Use [xstate](https://xstate.js.org/docs/) if you can.
 
-However `tiny-fsm` is also good if it meets your needs.
+However tiny-fsm is good enough if it meets your needs.
 
 ## Installation
 
@@ -26,7 +26,7 @@ yarn add tiny-fsm
 
 ## Usage
 
-```
+```js
 import { createMachine } from 'tiny-fsm';
 
 const config = {
@@ -79,8 +79,8 @@ const config = {
         hits,
       });
     },
-  }
-}
+  },
+};
 
 const { getState, getContext, send } = createMachine(config);
 send({ type: 'INPUT', data: { query: 'hello' } });
