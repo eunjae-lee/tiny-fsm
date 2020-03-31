@@ -1,4 +1,5 @@
 import { CreateMachineConfig } from 'tiny-fsm';
+import { search } from '../search';
 
 export type Context = {
   query: string | null;
@@ -87,8 +88,9 @@ export const config: CreateMachineConfig<Context> = {
         query,
       });
     },
-    search: () => {
-      throw new Error('implement me!');
+    search: async ({ data: { query }, send }) => {
+      const hits = await search(query);
+      send({ type: 'FETCHED', data: { hits } });
     },
     setHits: ({ setContext, data: { hits } }) => {
       setContext({

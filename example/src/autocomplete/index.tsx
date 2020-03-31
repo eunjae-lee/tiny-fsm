@@ -17,13 +17,7 @@ export default () => {
     search(''); // trigger an empty search to cache the search results.
   }, []);
 
-  const { context, send, setActions } = useStateMachine<Context>(config);
-  setActions({
-    search: async ({ data: { query } }) => {
-      const hits = await search(query);
-      send({ type: 'FETCHED', data: { hits } });
-    },
-  });
+  const { context, send } = useStateMachine<Context>(config);
 
   function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     send({ type: 'INPUT', data: { query: event.target.value } });
@@ -39,6 +33,7 @@ export default () => {
       event.preventDefault();
       send('HIGHLIGHT_NEXT');
     } else if (
+      // enter
       event.keyCode === 13 &&
       context &&
       context.highlightedIndex !== undefined
