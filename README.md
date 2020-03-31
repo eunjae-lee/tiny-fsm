@@ -4,6 +4,10 @@
 
 This is a tiny library for finite state machine. The gzipped bundle size is around 1kb.
 
+## Demo
+
+https://codesandbox.io/s/github/eunjae-lee/tiny-fsm/tree/master/example
+
 ## Who should use this?
 
 You'd better just use [@xstate/fsm](https://xstate.js.org/docs/packages/xstate-fsm/).
@@ -87,10 +91,6 @@ send({ type: 'INPUT', data: { query: 'hello' } });
 console.log(getState()); // { searchBox: 'searching' }
 console.log(getContext()); // { query: 'hello', hits: [] }
 ```
-
-## Demo
-
-https://codesandbox.io/s/github/eunjae-lee/tiny-fsm/tree/master/example
 
 ## Documentation
 
