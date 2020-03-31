@@ -2,7 +2,7 @@
 
 ## What is this?
 
-This is a small library to implement Finite State Machine. The gzipped bundle size is around 1kb.
+This is a tiny library for finite state machine. The gzipped bundle size is around 1kb.
 
 ## Who should use this?
 
