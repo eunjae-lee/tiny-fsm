@@ -14,11 +14,11 @@ You'd better just use [@xstate/fsm](https://xstate.js.org/docs/packages/xstate-f
 
 I wanted to use it, but it doesn't provide parallel states, so I made this.
 
-This is not a serious project, but more of a outcome of my learning.
+This is not a serious project, but more of an outcome of what I tried myself.
 
 Use [xstate](https://xstate.js.org/docs/) if you can.
 
-However tiny-fsm is good enough if it meets your needs.
+However, tiny-fsm is good enough if it meets your needs.
 
 ## Installation
 
