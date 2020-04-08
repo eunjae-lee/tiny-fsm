@@ -6,7 +6,7 @@ This is a tiny library for finite state machine. The gzipped bundle size is arou
 
 ## Demo
 
-https://codesandbox.io/s/github/eunjae-lee/tiny-fsm/tree/master/example
+- AutoComplete: https://codesandbox.io/s/github/eunjae-lee/tiny-fsm/tree/master/examples/autocomplete
 
 ## Who should use this?
 
